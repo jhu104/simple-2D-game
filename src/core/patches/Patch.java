@@ -1,5 +1,11 @@
 package core.patches;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
+
+import core.World;
 import core.exceptions.PatchException;
 
 /**
@@ -13,13 +19,23 @@ public class Patch {
 	private int _cost; // _cost is the energy required for a character to move across this patch of land.
 	private char _letter; // _letter is the letter to use when printing the patch
 	String description;
+	protected Image image;
 
 	public Patch (int cost, char letter) {
 		_cost = cost;
 		_letter = letter;
-
-
-
+		if(letter == 'M'){
+			image = World.createImageIcon("/images/mountain.png").getImage();
+		}
+		else if(letter == 'R'){
+			image = World.createImageIcon("/images/river.png").getImage();
+		}
+		else if(letter == 'D'){
+			image = World.createImageIcon("/images/desert.png").getImage();
+		}
+		else if(letter == 'F'){
+			image = World.createImageIcon("/images/forest.png").getImage();
+		}
 	}
 	/**
 	 * 
@@ -54,6 +70,10 @@ public class Patch {
 		}
 	}
 
+	public void drawPatch(Graphics2D graphic,int x,int y) {
+		graphic.drawImage(image,x*30,y*30,null);
+	}
+	
 	// accessor to the cost variable
 	public int getCost () {
 		return _cost;

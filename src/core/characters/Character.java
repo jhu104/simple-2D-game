@@ -1,5 +1,6 @@
 package core.characters;
 
+import java.awt.Component;
 import java.awt.Image;
 import java.util.ArrayList;
 
@@ -13,11 +14,11 @@ import core.patches.Patch;
  * @author jay
  *
  */
-public class Character {
+public class Character extends Component {
 
 	private int x;
 	private int y;
-	private Image image;
+	protected Image image;
 	protected Patch[][] _world;
 	protected ArrayList<Character> characters;
 	protected ArrayList<Player> players;

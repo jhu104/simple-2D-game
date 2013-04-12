@@ -23,18 +23,6 @@ import core.exceptions.DescriptionException;
  */
 public class Main extends JFrame {
 
-	public Main(){
-
-		add(new World(3,4));
-
-		setTitle("World game");
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(800, 900);
-		setLocationRelativeTo(null);
-		setVisible(true);
-	}
-
-
 	// Call this method to run the text version of the game.
 	// Complete the method for Stage 2.
 	public static String generateRow(int column){
@@ -60,7 +48,7 @@ public class Main extends JFrame {
 			for(int i = 0;i < column;i++){
 				w.addFromLine(i, generateRow(column));
 			}
-			for(int i = 0;i < 1;i++){
+			for(int i = 0;i < 2;i++){
 				w.addCharacter(new Monster(w.nextX(),w.nextY(),w.getWorld(),50,5,w.getCharacters(),w.getPlayers()));
 				w.addCharacter(new Healer(w.nextX(),w.nextY(),w.getWorld(),10,w.getCharacters(),w.getPlayers()));
 				w.addCharacter(new Animal(w.nextX(),w.nextY(),w.getWorld(),w.getCharacters(),w.getPlayers()));
@@ -73,22 +61,23 @@ public class Main extends JFrame {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		System.out.println(w.displayWholeWorld());
-		w.startGame();
+		w.startGame(null);
 		//////////////////////////////////////
 	}
 
 	// Call this method to instantiate the main class
 	public static void runGuiVersion () {
-		// new GameGui ();
-		new Main();
+		GameGui gui = new GameGui ();
+		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		gui.setSize(300,330);
+		gui.setVisible (true);
 	}
 
 	/**
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
-		runTextVersion (); // comment out to run GUI version
-		//		runGuiVersion (); // uncomment for the GUI version
-		System.exit(0);
+//		runTextVersion (); // comment out to run GUI version
+		runGuiVersion (); // uncomment for the GUI version
 	}
 }

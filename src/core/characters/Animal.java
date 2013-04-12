@@ -21,8 +21,6 @@ import java.util.ArrayList;
  * @author Jay
  */
 public class Animal extends Character{
-	
-	Image animal;
 
 	public  Animal (int x, int y,Patch[][] _world,ArrayList<Character> characters,ArrayList<Player> players){
 		super(x,y,_world, characters, players);
@@ -30,7 +28,7 @@ public class Animal extends Character{
 	}
 
 	public void Drawanimals(Graphics2D g2d, int x, int y) {
-		g2d.drawImage(animal, x, y, null);
+		g2d.drawImage(image, x, y, null);
 	}
 	
 	public String toString(){

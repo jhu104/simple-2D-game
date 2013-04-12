@@ -4,6 +4,7 @@
  */
 package core.characters;
 
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 import javax.swing.Timer;
@@ -35,7 +36,7 @@ public class Player extends HealthCharacter{
 		super(x,y,_world,health,dmg, characters, players);
 		this.name = name;
 		screendata = new short[nrofblocks * nrofblocks];
-		setImage("C://images//facebook.png");
+		setImage("/images/facebook.png");
 	}
 	
 	public String getName(){
@@ -46,10 +47,9 @@ public class Player extends HealthCharacter{
 		return name+"::Attributes"+super.toString()+"}";
 	}
 	
-	/*public void keyPressed(KeyEvent e) {
-
+	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
-
+		System.out.println("Moving");
 		if (key == KeyEvent.VK_LEFT)
 		{
 			move('L');   
@@ -67,20 +67,5 @@ public class Player extends HealthCharacter{
 		{
 			move('D'); 
 		}
-		else if (key == KeyEvent.VK_ESCAPE && timer.isRunning())
-		{
-			ingame=false;
-		}
-		else if (key == KeyEvent.VK_PAUSE) {
-			if (timer.isRunning())
-				timer.stop();
-			else timer.start();
-		}
-	}*/
-
-	public int getScore() {
-		return score;
 	}
-
-
 }
