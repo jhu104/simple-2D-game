@@ -24,7 +24,7 @@ public class Animal extends Character{
 
 	public  Animal (int x, int y,Patch[][] _world,ArrayList<Character> characters,ArrayList<Player> players){
 		super(x,y,_world, characters, players);
-		setImage("C://images//visa.png");
+		setImage("/images/animal.png");
 	}
 
 	public void Drawanimals(Graphics2D g2d, int x, int y) {

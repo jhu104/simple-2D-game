@@ -36,7 +36,7 @@ public class Player extends HealthCharacter{
 		super(x,y,_world,health,dmg, characters, players);
 		this.name = name;
 		screendata = new short[nrofblocks * nrofblocks];
-		setImage("/images/facebook.png");
+		setImage("/images/animal.png");
 	}
 	
 	public String getName(){

@@ -4,7 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 
 import javax.swing.ImageIcon;
-
+import core.Util;
 import core.World;
 import core.exceptions.PatchException;
 
@@ -25,16 +25,19 @@ public class Patch {
 		_cost = cost;
 		_letter = letter;
 		if(letter == 'M'){
-			image = World.createImageIcon("/images/mountain.png").getImage();
+			image =Util.createImageIcon("/images/mountain.png").getImage();
 		}
 		else if(letter == 'R'){
-			image = World.createImageIcon("/images/river.png").getImage();
+			image = Util.createImageIcon("/images/river.png").getImage();
 		}
 		else if(letter == 'D'){
-			image = World.createImageIcon("/images/desert.png").getImage();
+			image = Util.createImageIcon("/images/desert.png").getImage();
 		}
 		else if(letter == 'F'){
-			image = World.createImageIcon("/images/forest.png").getImage();
+			image = Util.createImageIcon("/images/forest.png").getImage();
+		}
+		else if(letter == 'G'){
+			image = Util.createImageIcon("/images/grass.png").getImage();
 		}
 	}
 	/**
@@ -46,7 +49,7 @@ public class Patch {
 	// Helper method for creating a patch type from
 	// a character.
 	// Needs extending to cope with other patch types.
-	static Patch fromCharacter (char c) throws PatchException {
+	public static Patch fromCharacter (char c) throws PatchException {
 		switch (c) {
 		case 'g': case 'G': 
 			return new GrassPatch ();

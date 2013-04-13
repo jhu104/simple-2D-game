@@ -17,6 +17,7 @@ public class Monster extends HealthCharacter{
 
 	public Monster(int x,int y,Patch[][] _world,int health,int dmg,ArrayList<Character> characters,ArrayList<Player> players){
 		super(x,y,_world,health,dmg, characters, players);
+		setImage("/images/monster.png");
 	}
 	
 	public String toString(){

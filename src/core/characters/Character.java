@@ -3,9 +3,10 @@ package core.characters;
 import java.awt.Component;
 import java.awt.Image;
 import java.util.ArrayList;
-
+import core.Util;
 import javax.swing.ImageIcon;
 
+import core.World;
 import core.patches.Patch;
 
 
@@ -48,6 +49,10 @@ public class Character extends Component {
 		this.y = y;
 	}
 
+	/**
+	 * Move character in given direction, if character cannot move, player will remain in same place.
+	 * @param direction character 'L', 'R', 'D', 'U'
+	 */
 	public void move(char direction){
 		boolean canMove = true;
 		if(direction == 'L' && x > 0) {
@@ -85,10 +90,10 @@ public class Character extends Component {
 	}
 	
 	protected void setImage(String location){
-		ImageIcon a = new ImageIcon(location);
+		ImageIcon a = Util.createImageIcon(location);
 		image = a.getImage(); 
 	}
-
+	
 	public Image getImage(){
 		return image;
 	}

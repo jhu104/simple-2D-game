@@ -8,6 +8,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Panel;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,14 +24,18 @@ import java.util.StringTokenizer;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import core.Util;
 import core.characters.Animal;
 import core.characters.Character;
 import core.characters.Healer;
+import core.characters.HealthCharacter;
 import core.characters.Monster;
 import core.characters.Player;
 import core.exceptions.DescriptionException;
+import core.exceptions.PatchException;
 import core.patches.Patch;
 
 
@@ -41,7 +46,7 @@ import core.patches.Patch;
  *
  * @author Jay
  */
-public class World extends JPanel implements ActionListener {
+public class World extends JPanel implements ActionListener, KeyListener {
 
 	private boolean inGame;
 	private Patch[][] _world; // array to hold the world definitions
@@ -55,6 +60,7 @@ public class World extends JPanel implements ActionListener {
 	private int currPlayer;
 	private boolean isGUI;
 	private boolean isInit;
+	private boolean playerTurn;
 
 	final int scrsize; //nrofblocks * blocksize;
 
@@ -79,11 +85,13 @@ public class World extends JPanel implements ActionListener {
 		currPlayer = 0;
 		isGUI = false;
 		scrsize = rows * 30;
+		playerTurn = true;
 		//gui related settings
-		setFocusable(true);
+		setSize(rows*30,columns*30);
+//		setFocusable(true);
 		setBackground(Color.black);
 		setDoubleBuffered(true);
-		addKeyListener(new World.TAdapter());
+//		addKeyListener(this);
 	}
 
 	/**
@@ -112,7 +120,7 @@ public class World extends JPanel implements ActionListener {
 	 *  Second argument is a string, each character
 	 *  representing a patch name.
 	 * @param row which line to add
-	 * @param description the patches to add
+	 * @param description the patches to add can be r, d, m, f, or g
 	 * @throws DescriptionException if amount of patches is longer than each row of _world
 	 */
 	public  void addFromLine (int row, String description) throws DescriptionException {
@@ -130,7 +138,12 @@ public class World extends JPanel implements ActionListener {
 		Patch[] Newpatch = new Patch[description.length()]; 
 		availableRow[rowCounter++] = row;
 		for (int index = 0; index < Newpatch.length; index++){
-			Newpatch[index] = new Patch(row, description.charAt(index));
+			try {
+				Newpatch[index] = Patch.fromCharacter(description.charAt(index));
+			} catch (PatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}          
 
 		_world[row] = Newpatch;
@@ -180,7 +193,7 @@ public class World extends JPanel implements ActionListener {
 			if(character instanceof Animal)
 				display[character.getX()][character.getY()] = "cA";
 			if(character instanceof Monster)
-				display[character.getX()][character.getY()] = "cM";
+				display[character.getX()][character.getY()] = "M" + ((Monster)character).getHealth();
 		}
 		for(int i = 0; i < players.size();i++){
 			display[players.get(i).getX()][players.get(i).getY()]="p"+players.get(i).getHealth();
@@ -261,13 +274,10 @@ public class World extends JPanel implements ActionListener {
 					column = Integer.parseInt(tokenizer.nextToken());
 				}
 			}
-
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-
 		return new World(row,column);
-
 	}
 
 	/**
@@ -282,6 +292,7 @@ public class World extends JPanel implements ActionListener {
 		}
 		int m=0;
 		char[] directions = {'L','R','U','D'}; //used for random movement of characters
+		System.out.println("Move Player by inputting L, R, U, and D (Case Sensitive). \n Where L, R, U, and D stands for left, right, up ,and down respectively.");
 		while(players.size() > 0 || iterations < 100){
 			if(!isGUI) {
 				iterations++; //increment iteration in beginning if not using GUI
@@ -289,30 +300,38 @@ public class World extends JPanel implements ActionListener {
 					Player player = players.get(i);
 					int px = player.getX();
 					int py = player.getY();
-					int nearByPlayerIndex = playerNear(px,py); //look for nearby player to possibily attack
-					Player nearByPlayer = null;
-					if(nearByPlayerIndex != -1)
-						nearByPlayer = players.get(nearByPlayerIndex);
-					System.out.println("Move Player ( L | R | D | U | A):"); //prompt user for input
+					int nearByMonsterIndex = monsterNear(px,py); //look for nearby player to possibily attack
+					Monster nearByMonster = null;
+					if(nearByMonsterIndex != -1)
+						nearByMonster = (Monster) characters.get(nearByMonsterIndex);
+					System.out.println("Move Player ( LEFT | RIGHT | DOWN | UP | ATTACK):"); //prompt user for input
 					char direction = scanner.next().charAt(0);
 	
-					if(direction != 'A' || nearByPlayer == null) { //if there are no nearby players or current selected player doesn't attack
+					if(direction != 'A' || nearByMonster == null) { //if there are no nearby players or current selected player doesn't attack
 						player.move(direction);
-						if(player.getHealth() <= 0) //if player lose all health after moving then remove the player from players list
+						if(player.getHealth() <= 0) {//if player lose all health after moving then remove the player from players list
 							players.remove(player);
+							if(players.size() == 0) //break out of for loop if all players are dead
+								break;
+						}
 						System.out.println(displayWholeWorld());
 					}
 					else {
-						nearByPlayer.decreaseHealth(player.attack()); //if player attack nearby player
-						if(nearByPlayer.getHealth() <= 0)
-							players.remove(nearByPlayer);
+						nearByMonster.decreaseHealth(player.attack()); //if player attack nearby player
+						if(nearByMonster.getHealth() <= 0)
+							characters.remove(nearByMonster);
 						System.out.println(displayWholeWorld());
 					}
 				}
+				if(players.size() == 0) //break out of while loop if all players are dead
+					break;
+			} else {
+				while(playerTurn) {}
 			}
 
 			Random randomMove = new Random(System.nanoTime());
-			for(Character character : characters){
+			for(int i = 0;i < characters.size();i++){
+				Character character = characters.get(i);
 				int moveIndex = randomMove.nextInt(4); //create a random direction for each character to move
 				int nearByPlayerIndex = playerNear(character.getX(),character.getY()); //find nearby player to attack
 				Player nearByPlayer = null;
@@ -322,11 +341,16 @@ public class World extends JPanel implements ActionListener {
 				if(character instanceof Monster) { //if character is an instance of monster then attack any one player nearby
 					if(nearByPlayer != null) {
 						nearByPlayer.decreaseHealth(((Monster) character).attack());
-						if(nearByPlayer.getHealth() <= 0)
+						if(nearByPlayer.getHealth() <= 0) {
 							players.remove(nearByPlayerIndex);
+							if(players.size() == 0) //break out of the for loop if all players are dead
+								break;
+						}
 					}
 					else { //no players, then just move
 						character.move(directions[moveIndex]);
+						if(((Monster) character).getHealth() <= 0)
+							characters.remove(character);
 					}	
 				}
 				else if(character instanceof Healer){ //if character is an instance of healer, then heal any one player nearby
@@ -341,6 +365,10 @@ public class World extends JPanel implements ActionListener {
 					character.move(directions[moveIndex]);
 				}	
 			}
+			playerTurn =true;
+			if(players.size() == 0) //break out of while loop if players are all dead
+				break;
+			
 			if(!isGUI)
 				System.out.println(displayWholeWorld());
 			else
@@ -370,6 +398,26 @@ public class World extends JPanel implements ActionListener {
 		}
 		return -1;
 	}
+	
+	private int monsterNear(int x,int y){
+		for(int i = 0;i < characters.size();i++) {
+			if(characters.get(i) instanceof Monster){
+				int cx = characters.get(i).getX();
+				int cy = characters.get(i).getY();
+				if(cx == x){
+					if(cy == y+1 || cy == y-1)
+						return i;
+				}
+				if(cx == x-1)
+					if(cy == y+1 || cy == y-1 || cy == y)
+						return i;
+				if(cx == x+1)
+					if(cy == y+1 || cy == y-1 || cy == y)
+						return i;
+			}
+		}
+		return -1;
+	}
 
 	/*#####################################
 	 *###########GUI Codes#################
@@ -380,7 +428,7 @@ public class World extends JPanel implements ActionListener {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
 //		g2d.setColor(Color.black);
-		g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
+//		g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
 		if (inGame)
 			if(!isInit) {
 				initialize(g2d);
@@ -399,25 +447,31 @@ public class World extends JPanel implements ActionListener {
 
 	private void initialize(Graphics2D g2d) {
 		System.out.println("Initializing");
+		/*
+		 * Print the patch using x and y multiply by 30 for the size of each tile
+		 * then print the characters and players
+		 */
 		for(int i = 0;i < _world.length;i++)
-			for(int j = 0;j < _world[0].length;j++)
+			for(int j = 0;j < _world[0].length;j++) 
 				_world[j][i].drawPatch(g2d, j, i);
 		for(int i = 0;i < characters.size();i++)
-			g2d.drawImage(characters.get(i).getImage(), characters.get(i).getX(), characters.get(i).getY(),null);	
+			g2d.drawImage(characters.get(i).getImage(), characters.get(i).getX()*30, characters.get(i).getY()*30,null);	
 		for(int i = 0;i < players.size();i++)
-			g2d.drawImage(players.get(i).getImage(), players.get(i).getX(), players.get(i).getY(),null);	
-//		ImageIcon leftButtonIcon = createImageIcon("/images/right.gif");
-//		ImageIcon rightButtonIcon = createImageIcon("/images/left.gif");
-//		ImageIcon upButtonIcon = createImageIcon("/images/up.gif");
-//		ImageIcon downButtonIcon = createImageIcon("/images/down.gif");
-//		JButton left = new JButton("", leftButtonIcon);
-//		JButton right = new JButton("",rightButtonIcon);
-//		JButton up= new JButton("", upButtonIcon);
-//		JButton down = new JButton("",downButtonIcon);
-//		left.setActionCommand("left");
-//		right.setActionCommand("right");
-//		up.setActionCommand("up");
-//		down.setActionCommand("down");
+			g2d.drawImage(players.get(i).getImage(), players.get(i).getX()*30, players.get(i).getY()*30,null);	
+		
+		
+		ImageIcon leftButtonIcon = Util.createImageIcon("/images/right.gif");
+		ImageIcon rightButtonIcon = Util.createImageIcon("/images/left.gif");
+		ImageIcon upButtonIcon = Util.createImageIcon("/images/up.gif");
+		ImageIcon downButtonIcon = Util.createImageIcon("/images/down.gif");
+		JButton left = new JButton("", leftButtonIcon);
+		JButton right = new JButton("",rightButtonIcon);
+		JButton up= new JButton("", upButtonIcon);
+		JButton down = new JButton("",downButtonIcon);
+		left.setActionCommand("Left");
+		right.setActionCommand("Right");
+		up.setActionCommand("Up");
+		down.setActionCommand("Down");
 //		up.setMnemonic(KeyEvent.VK_UP);
 //		down.setMnemonic(KeyEvent.VK_DOWN);
 //		left.setMnemonic(KeyEvent.VK_LEFT);
@@ -430,14 +484,28 @@ public class World extends JPanel implements ActionListener {
 //		down.setToolTipText("Move down");
 //		left.setToolTipText("Move left");
 //		right.setToolTipText("Move right");
-//		add(up);
-//		add(down);
-//		add(left);
-//		add(right);
+		add(up);
+		add(down);
+		add(left);
+		add(right);
+		
+		up.addKeyListener(this);
+		down.addKeyListener(this);
+		left.addKeyListener(this);
+		right.addKeyListener(this);
 		isInit = true;
+		System.out.println("Initialized");
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		String action = e.getActionCommand();
+		if (playerTurn && ("Left".equals(action) || "Right".equals(action) || "Down".equals(action) || "Up".equals(action))) {
+			players.get(currPlayer).move(action.charAt(0));
+			if(players.get(currPlayer).getHealth() <= 0) {
+				players.remove(currPlayer);
+				System.out.println("Removing player");
+			}
+		} 
 		System.out.println("Before repainting");
 		repaint();  
 		System.out.println("Repainting");
@@ -457,39 +525,37 @@ public class World extends JPanel implements ActionListener {
 		g2d.drawString(s, (scrsize - metr.stringWidth(s)) / 2, scrsize / 2);
 	}
 
-	public static ImageIcon createImageIcon(String path) {
-		java.net.URL imgURL = World.class.getResource(path);
-		if (imgURL != null) {
-			return new ImageIcon(imgURL);
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
+	public void keyPressed(KeyEvent e) {
+		System.out.println("Key pressed#$#$#");
+		int key = e.getKeyCode();
+		if (!inGame  && (key == 's' || key == 'S')) {
+			inGame = true;
 		}
-	}
-
-	class TAdapter extends KeyAdapter {
-		public void keyPressed(KeyEvent e) {
-			System.out.println("Key pressed");
-			int key = e.getKeyCode();
-			if (key == 's' || key == 'S') {
-				inGame = true;
-			}
-			else {
+		else {
+			if(playerTurn) {
 				players.get(currPlayer).keyPressed(e);
 				if(players.get(currPlayer).getHealth() <= 0) {
 					players.remove(currPlayer);
 					System.out.println("Removing player");
 				}
 			}
-			System.out.println("S pressed");
 		}
+		System.out.println("S pressed");
+	}
 
-		public void keyReleased(KeyEvent e) {
-			if(inGame) {
-				currPlayer = (currPlayer + 1) % players.size();
-				if(currPlayer == 0)
-					iterations++;
+	public void keyReleased(KeyEvent e) {
+		if(inGame) {
+			currPlayer = (currPlayer + 1) % players.size();
+			if(currPlayer == 0) {
+				iterations++;
+				playerTurn = false;
 			}
 		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

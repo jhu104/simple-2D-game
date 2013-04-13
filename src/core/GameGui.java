@@ -7,6 +7,7 @@ package core;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 
@@ -24,17 +25,22 @@ public class GameGui extends JFrame {
 	public GameGui () {
 		super ("Game GUI");
 		setLayout(new FlowLayout());
-		setContentPane(getWorldView ());
+		World world = (World) getWorldView ();
+		setContentPane(world);
+		this.addKeyListener(world);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setVisible (true);
 	}
 
 	// Creates JPanel to display in JFrame.
 	// COMPLETE THIS METHOD TO DISPLAY YOUR OWN WIDGETS
 	private JPanel getWorldView () {
-		int column = 10, row = column;
+		int column = 20, row = column;
+		setSize(column*30,row*30+100);
 		World world = new World(row, column);
 		for(int i = 0;i < column;i++){
 			try {
-				world.addFromLine(i, Main.generateRow(column));
+				world.addFromLine(i, Util.generateRow(column));
 			} catch (DescriptionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

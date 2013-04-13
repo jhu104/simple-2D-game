@@ -4,12 +4,7 @@
  */
 package core.characters;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.util.ArrayList;
-
-import javax.swing.ImageIcon;
-
 import core.patches.Patch;
 
 
@@ -24,7 +19,7 @@ public class Healer extends Character{
 
 	public Healer(int x,int y,Patch[][] _world, int healAmount,ArrayList<Character> characters,ArrayList<Player> players){
 		super(x, y,_world, characters, players);
-		setImage("C://images//master.png");
+		setImage("/images/healer.png");
 		this.healAmount = healAmount;
 	}
 

@@ -26,6 +26,10 @@ public class HealthCharacter extends Character {
 	}
 	
 	public void decreaseHealth(int dmg){
+		if(this instanceof Monster)
+			System.out.println("Monster HP decrease By: "+dmg);
+		else
+			System.out.println("Player HP decrease By: "+dmg);
 		health -= dmg;
 	}
 	
